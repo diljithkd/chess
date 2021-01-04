@@ -13,6 +13,7 @@ class Board:
     self.last_move = NO_LAST_MOVE
     self.last_move_killed = NO_ONE_KILLED
     self.king = {WHITE:King(WHITE,0,3),BLACK:King(BLACK,7,3)}
+    self.opponent = {WHITE:BLACK, BLACK:WHITE}
     self.pieces = [Rook(WHITE,0,0),
                    Knight(WHITE,0,1),
                    Bishop(WHITE,0,2),
@@ -80,13 +81,21 @@ class Board:
     print('--------------------------------------------------------')
 
   def is_checked(self, color):
-    print(self.king[color])
+    print(self.king[color].curr_pos)
+    for piece in self.pieces:
+        if piece.color != color:
+            postns = piece.find_next_moves(self.board)
+            if self.king[color].curr_pos in postns:
+                return True
+    return False
     
 
   def move(self, src_x, src_y, dest_x, dest_y):
     #print('Move piece from ({},{}) to ({},{})'.format(src_x, src_y, dest_x, dest_y))
     piece = self.board[src_x][src_y]
     postns = piece.find_next_moves(self.board)
+    if self.king[self.opponent[piece.color]].curr_pos in postns:
+      postns.remove(self.king[self.opponent[piece.color]].curr_pos)
     #print('Possible Moves :', postns)
     if (dest_x, dest_y) in postns:
       if self.board[dest_x][dest_y] != EMPTY_CELL and self.board[dest_x][dest_y].color != piece.color:
@@ -96,7 +105,7 @@ class Board:
         self.last_move_killed = NO_ONE_KILLED
       piece.move(dest_x, dest_y)
       self.last_move = [src_x, src_y, dest_x, dest_y]
-      self.is_checked(piece.color)
+      print(self.is_checked(piece.color))
     else:
       pass
       #print('move not possible')
@@ -116,4 +125,8 @@ b.move(7,2,6,1)
 b.move(6,1,1,6)
 b.undo_last_move()
 b.undo_last_move()
+b.move(7,3,7,2)
+b.move(6,4,5,4)
+b.move(7,4,6,4)
+b.move(6,4,3,7)
     

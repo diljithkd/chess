@@ -5,6 +5,7 @@ from knight import *
 from pawn import *
 from queen import *
 from rook import *
+import copy
 class Board:
   def __init__(self):
     self.board = [[EMPTY_CELL]*HEIGHT for _ in range(WIDTH)]
@@ -72,6 +73,11 @@ class Board:
       self.pieces.remove(piece)
       self.killed_pieces.append(piece)
 
+  def revive_piece(self, piece):
+    if piece in self.pieces:
+      self.killed_pieces.remove(piece)
+      self.pieces.append(piece)
+
   def show_board(self):
     self.place_pieces()
     for i in self.board_vis:
@@ -97,15 +103,25 @@ class Board:
     if self.king[self.opponent[piece.color]].curr_pos in postns:
       postns.remove(self.king[self.opponent[piece.color]].curr_pos)
     #print('Possible Moves :', postns)
+    prev_move = self.last_move
+    prev_kill = self.last_move_killed
+    kill_flag = False
     if (dest_x, dest_y) in postns:
       if self.board[dest_x][dest_y] != EMPTY_CELL and self.board[dest_x][dest_y].color != piece.color:
         self.last_move_killed = self.board[dest_x][dest_y]
         self.kill_piece(self.board[dest_x][dest_y])
+        kill_flag = self.board[dest_x][dest_y]
       else:
         self.last_move_killed = NO_ONE_KILLED
       piece.move(dest_x, dest_y)
       self.last_move = [src_x, src_y, dest_x, dest_y]
-      print(self.is_checked(piece.color))
+      if self.is_checked(piece.color):
+        #print('This move is not possible beacuse king is checked')
+        self.last_move = prev_move
+        self.last_move_killed = prev_kill
+        piece.move(src_x, src_y)
+        if kill_flag:
+          self.revive_piece(kill_flag)          
     else:
       pass
       #print('move not possible')
@@ -129,4 +145,7 @@ b.move(7,3,7,2)
 b.move(6,4,5,4)
 b.move(7,4,6,4)
 b.move(6,4,3,7)
+b.move(1,4,2,4)
+b.move(3,7,3,6)
+b.move(2,4,3,4)
     

@@ -18,10 +18,10 @@ class Board:
     self.pieces = [Rook(WHITE,0,0),
                    Knight(WHITE,0,1),
                    Bishop(WHITE,0,2),
-                   King(WHITE,0,3),
+                   self.king[WHITE],
                    Queen(WHITE,0,4),
                    Bishop(WHITE,0,5),
-                   self.king[WHITE],
+                   Knight(WHITE,0,6),
                    Rook(WHITE,0,7),
                    Pawn(WHITE,1,0),
                    Pawn(WHITE,1,1),
@@ -87,14 +87,37 @@ class Board:
     print('--------------------------------------------------------')
 
   def is_checked(self, color):
-    print(self.king[color].curr_pos)
+    #print(self.king[color].curr_pos)
     for piece in self.pieces:
         if piece.color != color:
             postns = piece.find_next_moves(self.board)
             if self.king[color].curr_pos in postns:
                 return True
     return False
-    
+
+  def is_check_mate(self, color):
+    for piece in self.pieces:
+      if piece.color == color:
+        postns = piece.find_next_moves(self.board)
+        if postns != []:
+          for i in postns:
+            (src_x, src_y),(dest_x,dest_y) = piece.curr_pos, i
+            kill_flag = False
+            if self.board[dest_x][dest_y] != EMPTY_CELL and self.board[dest_x][dest_y].color != piece.color:
+              self.kill_piece(self.board[dest_x][dest_y])
+              kill_flag = self.board[dest_x][dest_y]
+            piece.move(dest_x, dest_y)
+            if self.is_checked(piece.color) == False:
+              piece.move(src_x, src_y)
+              if kill_flag:
+                self.revive_piece(kill_flag)
+              return False
+            else:
+              piece.move(src_x, src_y)
+              if kill_flag:
+                self.revive_piece(kill_flag)
+    return True
+                
 
   def move(self, src_x, src_y, dest_x, dest_y):
     #print('Move piece from ({},{}) to ({},{})'.format(src_x, src_y, dest_x, dest_y))
@@ -121,31 +144,11 @@ class Board:
         self.last_move_killed = prev_kill
         piece.move(src_x, src_y)
         if kill_flag:
-          self.revive_piece(kill_flag)          
+          self.revive_piece(kill_flag)
+        return False
     else:
       pass
       #print('move not possible')
+      return False
     self.show_board()
-    
-
-b = Board()
-b.show_board()
-b.move(1,0,2,0)
-b.move(6,1,5,1)
-b.move(2,0,3,0)
-b.move(5,1,4,1)
-b.move(3,0,4,0)
-b.move(4,0,5,0)
-b.move(7,1, 5,0)
-b.move(7,2,6,1)
-b.move(6,1,1,6)
-b.undo_last_move()
-b.undo_last_move()
-b.move(7,3,7,2)
-b.move(6,4,5,4)
-b.move(7,4,6,4)
-b.move(6,4,3,7)
-b.move(1,4,2,4)
-b.move(3,7,3,6)
-b.move(2,4,3,4)
-    
+    return True

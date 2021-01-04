@@ -11,4 +11,3 @@ class King(Piece):
             if i1>=0 and i1<HEIGHT and j1>=0 and j1<WIDTH and (board[i1][j1]==EMPTY_CELL or (board[i1][j1]!=EMPTY_CELL and board[i1][j1].color!=self.color)):
                 all_pos.append((i1,j1))
         return all_pos
-            

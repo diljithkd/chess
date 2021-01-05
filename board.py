@@ -64,7 +64,8 @@ class Board:
       a,b,c,d = self.last_move
       self.move(c,d,a,b)
     else:
-      print('No Undo available')
+      #print('No Undo available')
+      pass
     self.last_move = NO_LAST_MOVE
     self.last_move_killed = NO_ONE_KILLED
 
@@ -74,7 +75,7 @@ class Board:
       self.killed_pieces.append(piece)
 
   def revive_piece(self, piece):
-    if piece in self.pieces:
+    if piece in self.killed_pieces:
       self.killed_pieces.remove(piece)
       self.pieces.append(piece)
 
@@ -91,6 +92,7 @@ class Board:
     for piece in self.pieces:
         if piece.color != color:
             postns = piece.find_next_moves(self.board)
+            #print(postns, self.king[color].curr_pos)
             if self.king[color].curr_pos in postns:
                 return True
     return False
@@ -104,18 +106,27 @@ class Board:
             (src_x, src_y),(dest_x,dest_y) = piece.curr_pos, i
             kill_flag = False
             if self.board[dest_x][dest_y] != EMPTY_CELL and self.board[dest_x][dest_y].color != piece.color:
+              #print('killing', self.board[dest_x][dest_y])
               self.kill_piece(self.board[dest_x][dest_y])
               kill_flag = self.board[dest_x][dest_y]
             piece.move(dest_x, dest_y)
+            self.place_pieces()
             if self.is_checked(piece.color) == False:
               piece.move(src_x, src_y)
+              self.place_pieces()
               if kill_flag:
+                #print('reviving', kill_flag)
                 self.revive_piece(kill_flag)
+                #self.place_pieces()
+                self.show_board()
+              #print(src_x, src_y,dest_x,dest_y)
               return False
             else:
               piece.move(src_x, src_y)
+              self.place_pieces()
               if kill_flag:
                 self.revive_piece(kill_flag)
+                #self.place_pieces()
     return True
                 
 
@@ -137,18 +148,21 @@ class Board:
       else:
         self.last_move_killed = NO_ONE_KILLED
       piece.move(dest_x, dest_y)
+      self.place_pieces()
       self.last_move = [src_x, src_y, dest_x, dest_y]
       if self.is_checked(piece.color):
         #print('This move is not possible beacuse king is checked')
         self.last_move = prev_move
         self.last_move_killed = prev_kill
         piece.move(src_x, src_y)
+        self.place_pieces()
         if kill_flag:
           self.revive_piece(kill_flag)
-        return False
+          #self.place_pieces()
+        return False,'King under check'
     else:
       pass
       #print('move not possible')
-      return False
+      return False,'Not a valid move'
     self.show_board()
-    return True
+    return True,''
